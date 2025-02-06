@@ -10,8 +10,8 @@ metadata:
   namespace: minio-system
 type: Opaque
 stringData:
-  rootUser: minio     # você deve mudar para um usuário mais seguro
-  rootPassword: minio123  # você deve mudar para uma senha mais segura
+  rootUser: minio
+  rootPassword: minio123
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,6 +63,7 @@ metadata:
   name: minio
   namespace: minio-system
 spec:
+  type: LoadBalancer  # Mudando para LoadBalancer
   ports:
   - port: 9000
     targetPort: 9000
@@ -91,10 +92,7 @@ metadata:
   name: minio-ingress
   namespace: minio-system
   annotations:
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 spec:
   ingressClassName: nginx
   rules:
@@ -107,4 +105,4 @@ spec:
           service:
             name: minio
             port:
-              number: 9001  # Console port
+              number: 9001
