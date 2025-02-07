@@ -99,7 +99,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: minio.domain.local
+  - host: minio.page.local
     http:
       paths:
       - path: /
