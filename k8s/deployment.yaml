@@ -65,12 +65,12 @@ metadata:
 spec:
  type: LoadBalancer
  ports:
- - port: 9000
-   targetPort: 9000
-   name: api
- - port: 9001
+ - port: 9001        # Porta principal para o console
    targetPort: 9001
    name: console
+ - port: 9000        # Porta API
+   targetPort: 9000
+   name: api
  selector:
    app: minio
 ---
@@ -95,6 +95,7 @@ metadata:
    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+   nginx.ingress.kubernetes.io/rewrite-target: /browser
  labels:
    app.kubernetes.io/instance: miniodata
 spec:
