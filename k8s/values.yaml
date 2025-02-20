@@ -7,7 +7,7 @@ minio:
     ingressClassName: "nginx"
     hostname: minio.lakehouse.local
     annotations:
-      nginx.ingress.kubernetes.io/proxy-body-size: 1024m
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
   defaultBuckets: "lakehouse, airflow, risingwave, kafka"
   persistence:
     enabled: true
