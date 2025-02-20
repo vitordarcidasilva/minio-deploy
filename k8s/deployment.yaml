@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://seu-repositorio-git.com/seu-usuario/seu-repo.git
+    repoURL: https://github.com/vitordarcidasilva/minio-deploy.git
     path: minio
     targetRevision: HEAD
   destination:
