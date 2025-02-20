@@ -1,129 +1,25 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: minio-system
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: minio-creds
-  namespace: minio-system
-type: Opaque
-stringData:
-  rootUser: minio
-  rootPassword: minio123
----
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
 metadata:
   name: minio
-  namespace: minio-system
+  namespace: argocd
 spec:
-  selector:
-    matchLabels:
-      app: minio
-  template:
-    metadata:
-      labels:
-        app: minio
-    spec:
-      containers:
-      - name: minio
-        image: minio/minio:latest
-        args:
-        - server
-        - /data
-        - --console-address
-        - ":9001"
-        env:
-        - name: MINIO_ROOT_USER
-          valueFrom:
-            secretKeyRef:
-              name: minio-creds
-              key: rootUser
-        - name: MINIO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: minio-creds
-              key: rootPassword
-        - name: MINIO_API_REQUESTS_MAX_SIZE
-          value: "10GiB"  # Define o limite máximo de upload para 10 GiB
-        ports:
-        - containerPort: 9000  # Porta da API S3
-        - containerPort: 9001  # Porta do console
-        volumeMounts:
-        - name: data
-          mountPath: /data
-      volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: minio-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: minio
-  namespace: minio-system
-spec:
-  type: ClusterIP
-  ports:
-  - port: 9000
-    targetPort: 9000
-    name: api  # API S3
-  - port: 9001
-    targetPort: 9001
-    name: console  # Console de administração
-  selector:
-    app: minio
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: minio-pvc
-  namespace: minio-system
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi  # Tamanho do volume persistente
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: minio-ingress
-  namespace: minio-system
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "10g"  # Limite de upload de 10 GiB
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"  # Timeout de conexão
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"  # Timeout de envio
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"  # Timeout de leitura
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"  # Redirecionamento para HTTPS
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-    - minio.page.local
-    - s3.minio.page.local
-    secretName: minio-tls-secret  # Certificado TLS para HTTPS
-  rules:
-  - host: minio.page.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: minio
-            port:
-              number: 9001  # Console de administração
-  - host: s3.minio.page.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: minio
-            port:
-              number: 9000  # API S3
+  project: default
+  source:
+    chart: minio
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 14.6.0
+    helm:
+      values: |
+        # Você pode incluir valores padrão aqui
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minio
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
