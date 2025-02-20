@@ -6,23 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    chart: minio
-    repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 14.6.0
-    helm:
-      values: |
-        auth:
-          rootUser: "admin"
-          rootPassword: "password"
-        ingress:
-          enabled: true
-          ingressClassName: "nginx"
-          hostname: minio.lakehouse.local
-          annotations:
-            nginx.ingress.kubernetes.io/proxy-body-size: 1024m
-        defaultBuckets: "lakehouse, airflow, risingwave, kafka"
-        persistence:
-          size: 20Gi
+    repoURL: https://seu-repositorio-git.com/seu-usuario/seu-repo.git
+    path: minio
+    targetRevision: HEAD
   destination:
     server: https://kubernetes.default.svc
     namespace: minio
