@@ -10,10 +10,8 @@ spec:
     repoURL: https://charts.bitnami.com/bitnami
     targetRevision: 14.6.0
     helm:
-      values: |
-        # Você pode incluir valores padrão aqui
       valueFiles:
-        - values.yaml
+        - k8s/values.yaml  # Caminho completo para o values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: minio
