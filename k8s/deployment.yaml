@@ -10,7 +10,6 @@ metadata:
   namespace: minio
 type: Opaque
 data:
-  # password codificado em base64
   root-user: YWRtaW4=     # admin
   root-password: cGFzc3dvcmQ=  # password
 ---
@@ -32,9 +31,11 @@ spec:
       containers:
       - name: minio
         image: minio/minio:latest
-        args:
-        - server
-        - /data
+        command:
+        - /bin/bash
+        - -c
+        args: 
+        - minio server /data --console-address :9001 --address :9000
         env:
         - name: MINIO_ROOT_USER
           valueFrom:
@@ -49,8 +50,22 @@ spec:
         - name: MINIO_API_REQUEST_SIZE
           value: "524288000"  # 500MB em bytes
         ports:
-        - containerPort: 9000
-        - containerPort: 9001
+        - name: api
+          containerPort: 9000
+        - name: console
+          containerPort: 9001
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: api
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: api
+          initialDelaySeconds: 30
+          periodSeconds: 10
         volumeMounts:
         - name: data
           mountPath: /data
@@ -65,13 +80,16 @@ metadata:
   name: minio
   namespace: minio
 spec:
+  type: ClusterIP
   ports:
-  - port: 9000
+  - name: api
+    port: 9000
     targetPort: 9000
-    name: api
-  - port: 9001
+    protocol: TCP
+  - name: console
+    port: 9001
     targetPort: 9001
-    name: console
+    protocol: TCP
   selector:
     app: minio
 ---
@@ -98,6 +116,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "1800"
     nginx.ingress.kubernetes.io/proxy-max-temp-file-size: "1024m"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
 spec:
   rules:
   - host: minio.lakehouse.local
