@@ -80,7 +80,7 @@ metadata:
   name: minio
   namespace: minio
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
   - name: api
     port: 9000
